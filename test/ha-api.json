@@ -6,8 +6,8 @@
       "state":"on",
       "power":10,
       "energy":7098.4,
-      "current_temp":55.5,
-      "target_temp":"None",
+      "current_temp":41,
+      "target_temp":60,
       "unique_id":"000003",
       "unit_of_measurement":"kWh",
       "friendly_name":"heatpump_json"

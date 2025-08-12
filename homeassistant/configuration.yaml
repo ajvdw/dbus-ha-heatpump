@@ -1,17 +1,14 @@
 template:
   - sensor:
-      - name: "evcharger_json"
-        unique_id: "evcharger_01_json"
+      - name: "heatpump_json"
+        unique_id: "heatpump_json"
         unit_of_measurement: "kWh"
         state_class: measurement
-        state: "{{ states('sensor.charger_daily')|float }}"
+        state: "{{ states('sensor.heatpumpdaily')|float }}"
         attributes:
-          power: "{{ states('sensor.charger_input_power') }}"
-          energy: "{{ states('sensor.charger_total_yield')}}"
-          l1_v: "{{ states('sensor.charger_phase_a_voltage') }}"
-          l2_v: "{{ states('sensor.charger_phase_b_voltage') }}"
-          l3_v: "{{ states('sensor.charger_phase_c_voltage') }}"
-          l1_i: "{{ states('sensor.charger_phase_a_current') }}"
-          l2_i: "{{ states('sensor.charger_phase_b_current') }}"
-          l3_i: "{{ states('sensor.charger_phase_c_current') }}" 
-          unique_id: "000002"
+          state: "{{ states('switch.manualboiler') }}"
+          power: "{{ (((states('sensor.eastron_sdm_total_power')) | float) * 1000)|round(1) }}"
+          energy: "{{ ((states('sensor.eastron_sdm_import_active_energy')) | float) |round(1) }}"
+          current_temp: "{{ states('sensor.ebusd_ctlv2_hwcstoragetemp_tempv')|round(1)}}"
+          target_temp: "{{ states('number.ebusd_ctlv2_hwctempdesired_tempv') }}"
+          unique_id: "000003"          

@@ -26,7 +26,7 @@ class DbusHAHeatpumpService:
         deviceinstance = int(config['DEFAULT']['DeviceInstance'])
         customname = config['DEFAULT']['CustomName']
 
-        productid = 0xFFFF #45069
+        productid = 0xFFFF 
 
         self._dbusservice = VeDbusService("{}.http_{:02d}".format(servicename, deviceinstance))
         self._paths = paths
@@ -119,7 +119,6 @@ class DbusHAHeatpumpService:
     def _signOfLife(self):
         logging.info("--- Start: sign of life ---")
         logging.info("Last _update() call: %s" % (self._lastUpdate))
-        logging.info("Last '/Ac/Power': %s" % (self._dbusservice['/Ac/Power']))
         logging.info("--- End: sign of life ---")
         return True
  
@@ -131,67 +130,32 @@ class DbusHAHeatpumpService:
             hp_data = self._getData()
             config = self._getConfig()
 
-
-#/ProductId
-#/State. (0,1)
-#/Ac/Power
-#/Ac/Energy/Forward
-#/Temperature
-#/TargetTemperature
-
             #send data to DBus for 3phase system
-            self._dbusservice['/Ac/Power'] = ev_data['power']
-            self._dbusservice['/Current'] = ev_data['l1_i']
-            self._dbusservice['/Ac/L1/Power'] = ev_data['l1_v']*ev_data['l1_i']
-            self._dbusservice['/Ac/L2/Power'] = ev_data['l2_v']*ev_data['l2_i']
-            self._dbusservice['/Ac/L3/Power'] = ev_data['l3_v']*ev_data['l3_i']
-            self._dbusservice['/Mode'] = 0  # Manual, no control
-            self._dbusservice['/MaxCurrent'] = 16
-            #self._dbusservice['/Status'] = 1  # 0=Disconnected, 1=Connected, 2=Charging, 3=Charged, #24=Stop Charging
-
-
-            # set charging time start
-            if self._charging_time["start"] is None and ev_data['power'] > 0:
-                self._charging_time["start"] = now
-                self._energy_start = (ev_data['energy'])
-                self._dbusservice['/Status'] = 2 #Charging
-
-            # calculate charging time if charging started
-            if self._charging_time["start"] is not None:
-                self._dbusservice['/ChargingTime'] = now - self._charging_time["start"]
-
-                if ev_data['power'] == 0 and self._charging_time["stopped_since"] is None:
-                    self._charging_time["stopped_since"] = now
-                    self._dbusservice['/Status'] = 1 #Connected
-                elif ev_data['power'] > 0 and self._charging_time["stopped_since"] is not None:
-                    self._charging_time["stopped_since"] = None
-
-                if self._charging_time["stopped_since"] is not None and STOP_CHARGING_COUNTER_AFTER < now - self._charging_time["stopped_since"]:
-                    self._charging_time["start"] = None
-                    self._charging_time["stopped_since"] = None
-                    self._dbusservice['/ChargingTime']= None
-            
-            if self._energy_start > 0:
-                self._dbusservice['/Ac/Energy/Forward'] = (ev_data['energy']) - self._energy_start
+            self._dbusservice['/Ac/Power'] = hp_data['power']
+            self._dbusservice['/Ac/Energy/Forward'] = hp_data['energy']
+            self._dbusservice['/Temperature'] = hp_data['current_temperature']
+            self._dbusservice['/TargetTemperature'] = hp_data['target_temperature']
+            if( hp_data['state'] == 'on' )"
+                self._dbusservice['/State'] = 1
             else:
-                self._dbusservice['/Ac/Energy/Forward'] = 0
-                
-            #logging
-            logging.debug("Grid Consumption (/Ac/Power): %s" % (self._dbusservice['/Ac/Power']))
-            logging.debug("Grid Forward (/Ac/Energy/Forward): %s" % (self._dbusservice['/Ac/Energy/Forward']))
-            logging.debug("---");
-            
+                self._dbusservice['/State'] = 10
+
             # increment UpdateIndex - to show that new data is available an wrap
             self._dbusservice['/UpdateIndex'] = (self._dbusservice['/UpdateIndex'] + 1 ) % 256
-
             #update lastupdate vars
             self._lastUpdate = time.time()
+
+            #logging
+            logging.debug("Heatpump Power (/Ac/Power): %s" % (self._dbusservice['/Ac/Power']))
+            logging.debug("Heatpump Energy (/Ac/Energy/Forward): %s" % (self._dbusservice['/Ac/Energy/Forward']))
+            logging.debug("---");
         except (ValueError, requests.exceptions.ConnectionError, requests.exceptions.Timeout, ConnectionError) as e:
             logging.critical('Error getting data from ESPHome - check network or ESPhome device status. Setting power values to 0. Details: %s', e, exc_info=e)       
-            self._dbusservice['/Ac/L1/Power'] = 0                                       
-            self._dbusservice['/Ac/L2/Power'] = 0                                       
-            self._dbusservice['/Ac/L3/Power'] = 0
             self._dbusservice['/Ac/Power'] = 0
+            self._dbusservice['/Ac/Energy/Forward'] = 0
+            self._dbusservice['/Temperature'] = 0
+            self._dbusservice['/TargetTemperature] = 0
+            self._dbusservice['/State'] = 0  # 0=off, 1=on
             self._dbusservice['/UpdateIndex'] = (self._dbusservice['/UpdateIndex'] + 1 ) % 256        
         except Exception as e:
             logging.critical('Error at %s', '_update', exc_info=e)
@@ -237,7 +201,8 @@ def main():
         _kwh = lambda p, v: (str(round(v, 2)) + ' kWh')
         _a = lambda p, v: (str(round(v, 1)) + ' A')
         _w = lambda p, v: (str(round(v, 1)) + ' W')
-        _v = lambda p, v: (str(round(v, 1)) + ' V')   
+        _v = lambda p, v: (str(round(v, 1)) + ' V')  
+        _t = lambda p, v: (str(round(v, 1)) + '°C')
         _n = lambda p, v: (str("%i" % v ) )
         
         #start our main-service
@@ -246,19 +211,10 @@ def main():
             servicename='com.victronenergy.evcharger.ha',
             paths={
                 '/Ac/Energy/Forward': {'initial': 0, 'textformat': _kwh}, # energy bought from the grid
-                '/Ac/Power': {'initial': 0, 'textformat': _w},            
-                '/Ac/Current': {'initial': 0, 'textformat': _a},
-                '/Ac/L1/Power': {'initial': 0, 'textformat': _w},
-                '/Ac/L2/Power': {'initial': 0, 'textformat': _w},
-                '/Ac/L3/Power': {'initial': 0, 'textformat': _w},
-                "/Current": {'initial': None, "textformat": _a},
-                "/MaxCurrent": {'initial': None, "textformat": _a},
-                "/SetCurrent": {'initial': None, "textformat": _a},
-                "/AutoStart": {'initial': 0, "textformat": _n},
-                "/ChargingTime": {'initial': None, "textformat": _n},                
-                '/Mode': {'initial': 1, "textformat": _n},
-                "/Status": {'initial': 0, "textformat": _n},
-                "/StartStop": {'initial': 1, "textformat": _n},
+                '/Ac/Power': {'initial': 0, 'textformat': _w}, 
+                '/State': {'initial': 0, "textformat": _n},           
+                "/Temperature": {'initial': 0, "textformat": _t},
+                "/TargetTemperature": {'initial': 0, "textformat": _t},
                 })
         logging.info('Connected to dbus, and switching over to gobject.MainLoop() (= event based)')
         mainloop = gobject.MainLoop()

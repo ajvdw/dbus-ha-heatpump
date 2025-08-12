@@ -18,8 +18,6 @@ import configparser # for config/ini file
 sys.path.insert(1, os.path.join(os.path.dirname(__file__), '/opt/victronenergy/dbus-systemcalc-py/ext/velib_python'))
 from vedbus import VeDbusService
 
-STOP_CHARGING_COUNTER_AFTER = 300  # seconds
-
 class DbusHAHeatpumpService:
     def __init__(self, servicename, paths, productname='Heatpump', connection='HA Heatpump HTTP JSON Service'):
         config = self._getConfig()
@@ -44,7 +42,7 @@ class DbusHAHeatpumpService:
         self._dbusservice.add_path('/FirmwareVersion', 0.2)
         self._dbusservice.add_path('/HardwareVersion', 0)
         self._dbusservice.add_path('/Connected', 1)
-        self._dbusservice.add_path('/Role', 'heat pump')
+        self._dbusservice.add_path('/Role', 'heatpump')
         self._dbusservice.add_path('/Position', 1) 
         self._dbusservice.add_path('/Serial', self._getSerial())
         self._dbusservice.add_path('/UpdateIndex', 0)
@@ -54,12 +52,7 @@ class DbusHAHeatpumpService:
         for path, settings in self._paths.items():
           self._dbusservice.add_path(
             path, settings['initial'], gettextcallback=settings['textformat'], writeable=True, onchangecallback=self._handlechangedvalue)
-    
-        # last update
-        self._lastUpdate = 0
-        self._charging_time = {"start": None, "calculate": False, "stopped_since": 0}
-        self._energy_start = 0
-    
+      
         # add _update function 'timer'
         gobject.timeout_add(5000 , self._update) # pause 500ms before the next request
         

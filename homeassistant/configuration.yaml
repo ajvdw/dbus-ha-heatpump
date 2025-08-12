@@ -1,0 +1,17 @@
+template:
+  - sensor:
+      - name: "evcharger_json"
+        unique_id: "evcharger_01_json"
+        unit_of_measurement: "kWh"
+        state_class: measurement
+        state: "{{ states('sensor.charger_daily')|float }}"
+        attributes:
+          power: "{{ states('sensor.charger_input_power') }}"
+          energy: "{{ states('sensor.charger_total_yield')}}"
+          l1_v: "{{ states('sensor.charger_phase_a_voltage') }}"
+          l2_v: "{{ states('sensor.charger_phase_b_voltage') }}"
+          l3_v: "{{ states('sensor.charger_phase_c_voltage') }}"
+          l1_i: "{{ states('sensor.charger_phase_a_current') }}"
+          l2_i: "{{ states('sensor.charger_phase_b_current') }}"
+          l3_i: "{{ states('sensor.charger_phase_c_current') }}" 
+          unique_id: "000002"

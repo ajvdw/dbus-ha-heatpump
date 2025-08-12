@@ -1,0 +1,23 @@
+{
+   "entity_id":"sensor.heatpump_json",
+   "state":"14.5",
+   "attributes":{
+      "state_class":"measurement",
+      "state":"on",
+      "power":10,
+      "energy":7098.4,
+      "current_temp":55.5,
+      "target_temp":"None",
+      "unique_id":"000003",
+      "unit_of_measurement":"kWh",
+      "friendly_name":"heatpump_json"
+   },
+   "last_changed":"2025-08-12T14:07:46.026138+00:00",
+   "last_reported":"2025-08-12T14:08:25.561155+00:00",
+   "last_updated":"2025-08-12T14:08:25.561155+00:00",
+   "context":{
+      "id":"01K2F9RREPQXW7P5YKPFH8SQZ4",
+      "parent_id":"None",
+      "user_id":"None"
+   }
+}

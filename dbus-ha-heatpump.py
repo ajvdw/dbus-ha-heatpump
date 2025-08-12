@@ -133,9 +133,9 @@ class DbusHAHeatpumpService:
             #send data to DBus for 3phase system
             self._dbusservice['/Ac/Power'] = hp_data['power']
             self._dbusservice['/Ac/Energy/Forward'] = hp_data['energy']
-            self._dbusservice['/Temperature'] = hp_data['current_temperature']
-            self._dbusservice['/TargetTemperature'] = hp_data['target_temperature']
-            if( hp_data['state'] == 'on' )"
+            self._dbusservice['/Temperature'] = hp_data['current_temp']
+            self._dbusservice['/TargetTemperature'] = hp_data['target_temp']
+            if( hp_data['state'] == 'on' ):
                 self._dbusservice['/State'] = 1
             else:
                 self._dbusservice['/State'] = 10
@@ -154,7 +154,7 @@ class DbusHAHeatpumpService:
             self._dbusservice['/Ac/Power'] = 0
             self._dbusservice['/Ac/Energy/Forward'] = 0
             self._dbusservice['/Temperature'] = 0
-            self._dbusservice['/TargetTemperature] = 0
+            self._dbusservice['/TargetTemperature'] = 0
             self._dbusservice['/State'] = 0  # 0=off, 1=on
             self._dbusservice['/UpdateIndex'] = (self._dbusservice['/UpdateIndex'] + 1 ) % 256        
         except Exception as e:
@@ -207,8 +207,8 @@ def main():
         
         #start our main-service
         
-        evac_output = DbusHAEVChargerService(
-            servicename='com.victronenergy.evcharger.ha',
+        evac_output = DbusHAHeatpumpService(
+            servicename='com.victronenergy.heatpump.ha',
             paths={
                 '/Ac/Energy/Forward': {'initial': 0, 'textformat': _kwh}, # energy bought from the grid
                 '/Ac/Power': {'initial': 0, 'textformat': _w}, 

@@ -23,6 +23,7 @@ class DbusHAHeatpumpService:
         config = self._getConfig()
         deviceinstance = int(config['DEFAULT']['DeviceInstance'])
         customname = config['DEFAULT']['CustomName']
+        position = int(config['DEFAULT']['Position'])
 
         productid = 0xFFFF 
 
@@ -43,7 +44,7 @@ class DbusHAHeatpumpService:
         self._dbusservice.add_path('/HardwareVersion', 0)
         self._dbusservice.add_path('/Connected', 1)
         self._dbusservice.add_path('/Role', 'heatpump')
-        self._dbusservice.add_path('/Position', 1) 
+        self._dbusservice.add_path('/Position', position ) 
         self._dbusservice.add_path('/Serial', self._getSerial())
         self._dbusservice.add_path('/UpdateIndex', 0)
 

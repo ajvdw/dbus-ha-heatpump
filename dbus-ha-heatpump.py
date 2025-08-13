@@ -129,10 +129,11 @@ class DbusHAHeatpumpService:
             self._dbusservice['/Ac/Energy/Forward'] = hp_data['energy']
             self._dbusservice['/Temperature'] = hp_data['current_temp']
             self._dbusservice['/TargetTemperature'] = hp_data['target_temp']
-            if( hp_data['state'] == 'on' ):
-                self._dbusservice['/State'] = 1
+            
+            if( hp_data['state'] == 'on' ): 
+                self._dbusservice['/State'] = 3
             else:
-                self._dbusservice['/State'] = 10
+                self._dbusservice['/State'] = 0
 
             # increment UpdateIndex - to show that new data is available an wrap
             self._dbusservice['/UpdateIndex'] = (self._dbusservice['/UpdateIndex'] + 1 ) % 256
@@ -149,7 +150,7 @@ class DbusHAHeatpumpService:
             self._dbusservice['/Ac/Energy/Forward'] = 0
             self._dbusservice['/Temperature'] = 0
             self._dbusservice['/TargetTemperature'] = 0
-            self._dbusservice['/State'] = 0  # 0=off, 1=on
+            self._dbusservice['/State'] = 0  # 0=Off;1=Error;2=Startup;3=Heating;4=Cooling
             self._dbusservice['/UpdateIndex'] = (self._dbusservice['/UpdateIndex'] + 1 ) % 256        
         except Exception as e:
             logging.critical('Error at %s', '_update', exc_info=e)

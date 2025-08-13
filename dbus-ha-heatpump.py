@@ -26,7 +26,7 @@ class DbusHAEVChargerService:
         deviceinstance = int(config['DEFAULT']['DeviceInstance'])
         customname = config['DEFAULT']['CustomName']
 
-        productid = 45058 # 0xFFFF 
+        productid = 0xFFFF #45058 # 0xFFFF 
 
         self._dbusservice = VeDbusService("{}.http_{:02d}".format(servicename, deviceinstance))
         self._paths = paths

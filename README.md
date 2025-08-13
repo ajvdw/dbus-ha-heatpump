@@ -52,7 +52,7 @@ Within the project there is a file `/data/dbus-ha-heatpump/config.ini` - just ch
 | DEFAULT  | SignOfLifeLog  | Time in minutes how often a status is added to the log-file `current.log` with log-level INFO |
 | DEFAULT  | CustomName  | Name of your device - usefull if you want to run multiple versions of the script |
 | DEFAULT  | DeviceInstance  | DeviceInstanceNumber e.g. 40 |
-| DEFAULT  | Position	0: AC Out, 1: AC In (default: 0) |
+| DEFAULT  | Position	| 0: AC Out, 1: AC In (default: 0) |
 | DEFAULT  | LogLevel  | Define the level of logging - lookup: https://docs.python.org/3/library/logging.html#levels |
 | DEFAULT  | Host | IP or hostname of the homeassistant api |
 | DEFAULT  | Token | Long lived token from homeassistant/profile/security |
